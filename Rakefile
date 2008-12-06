@@ -85,9 +85,9 @@ end
 if !defined?(Gem)
   puts "Package target requires RubyGEMs"
 else
-  desc "sudo gem uninstall aasm && rake gem && sudo gem install pkg/aasm-3.0.0.gem"
+  desc "sudo gem uninstall aasm && rake gem && sudo gem install pkg/aasm-2.0.3.gem"
   task :reinstall do
-    puts `sudo gem uninstall aasm && rake gem && sudo gem install pkg/aasm-3.0.0.gem`
+    puts `sudo gem uninstall aasm && rake gem && sudo gem install pkg/aasm-2.0.3.gem`
   end
 end
 

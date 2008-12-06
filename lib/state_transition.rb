@@ -1,10 +1,10 @@
 module AASM
   module SupportingClasses
     class StateTransition
-      attr_reader :from, :to, :opts
+      attr_reader :from, :to, :for, :opts
 
       def initialize(opts)
-        @from, @to, @guard, @on_transition = opts[:from], opts[:to], opts[:guard], opts[:on_transition]
+        @from, @to, @for, @guard, @on_transition = opts[:from], opts[:to], opts[:for], opts[:guard], opts[:on_transition]
         @opts = opts
       end
 

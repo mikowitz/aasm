@@ -5,7 +5,7 @@ require File.join(File.dirname(__FILE__), 'persistence')
 
 module AASM
   def self.Version
-    '0.0.2'
+    '2.0.3'
   end
 
   class InvalidTransition < RuntimeError
@@ -48,6 +48,24 @@ module AASM
       end
     end
     
+    def aasm_default_role(set_role=nil)
+      if set_role
+        AASM::StateMachine[self].default_role = set_role
+      else
+        AASM::StateMachine[self].default_role
+      end
+    end
+
+    def aasm_default_role=(role)
+      AASM::StateMachine[self].default_role = role
+    end
+
+    def aasm_role(name)
+      sm = AASM::StateMachine[self]
+      sm.create_role(name)
+      sm.default_role = name unless sm.default_role
+    end
+
     def aasm_event(name, options = {}, &block)
       sm = AASM::StateMachine[self]
       
@@ -68,6 +86,10 @@ module AASM
       AASM::StateMachine[self].states
     end
 
+    def aasm_roles
+      AASM::StateMachine[self].roles
+    end
+    
     def aasm_events
       AASM::StateMachine[self].events
     end
@@ -121,6 +143,8 @@ module AASM
   end
 
   def aasm_fire_event(name, persist, *args)
+    args.unshift(nil) unless args.first.nil? or args.empty? or self.class.aasm_states.include?(args.first.to_sym)
+
     aasm_state_object_for_state(aasm_current_state).call_action(:exit, self)
 
     new_state = self.class.aasm_events[name].fire(self, *args)

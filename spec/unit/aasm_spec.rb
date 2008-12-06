@@ -413,3 +413,54 @@ describe ChetanPatil do
     cp.dress!(:dating, 'purple', 'slacks')
   end
 end
+
+class BlogPost
+  include AASM
+
+  aasm_initial_state :new
+  aasm_state :new
+  aasm_state :submitted
+  aasm_state :posted
+  aasm_state :approved
+  aasm_state :hidden
+
+  aasm_default_role :submitter
+  aasm_role :submitter
+  aasm_role :poster
+  aasm_role :admin
+  
+  aasm_event :edit do
+    transitions :for => :submitter, :from => :new, :to => :submitted
+    transitions :for => :poster, :from => [:new, :submitted], :to => :posted
+    transitions :for => :admin, :from => [:new, :submitted, :posted], :to => :approved
+  end
+  
+  aasm_event :hide do
+    transitions :for => [:poster, :admin], :from => [:new, :submitted, :posted, :approved], :to => :hidden
+  end
+end
+
+describe AASM do
+  it 'should use aasm_default_role when none is provided (new to submitted)' do
+    bp = BlogPost.new
+    bp.edit!
+    bp.aasm_current_state.should == :submitted
+  end
+  
+  it 'should transition as admin (new to approved)' do
+    bp = BlogPost.new
+    bp.edit!(:admin)
+    bp.aasm_current_state.should == :approved
+  end
+  
+  it 'should transition where :for is an array (new to hidden)' do
+    bp = BlogPost.new
+    bp.hide!(:poster)
+    bp.aasm_current_state.should == :hidden
+  end
+  
+  it 'should not work' do
+    bp = BlogPost.new
+    lambda { bp.hide! }.should raise_error(AASM::InvalidTransition)
+  end
+end

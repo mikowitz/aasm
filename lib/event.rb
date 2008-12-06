@@ -13,8 +13,9 @@ module AASM
       end
 
       def fire(obj, to_state=nil, *args)
-        transitions = @transitions.select { |t| t.from == obj.aasm_current_state }
-        raise AASM::InvalidTransition, "Event '#{name}' cannot transition from '#{obj.aasm_current_state}'" if transitions.size == 0
+        role = !AASM::StateMachine[obj.class].nil? ? (obj.class.aasm_roles & args.flatten).first || obj.class.aasm_default_role : nil
+        transitions = @transitions.select { |t| t.from == obj.aasm_current_state and role_truth(t, role) }
+        raise AASM::InvalidTransition, "Event '#{name}' cannot transition from '#{obj.aasm_current_state}' as a(n) #{role.to_s}" if transitions.size == 0
 
         next_state = nil
         transitions.each do |transition|
@@ -48,6 +49,10 @@ module AASM
         Array(trans_opts[:from]).each do |s|
           @transitions << SupportingClasses::StateTransition.new(trans_opts.merge({:from => s.to_sym}))
         end
+      end
+      
+      def role_truth(trans, role)
+        role.nil? ? true : trans.for.is_a?(Symbol) ? trans.for == role : trans.for.include?(role)
       end
     end
   end

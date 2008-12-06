@@ -11,6 +11,11 @@ class Conversation
   aasm_state :awaiting_response
   aasm_state :junk
 
+  aasm_default_role :user
+  aasm_role :user
+  aasm_role :content_manager
+  aasm_role :admin
+
   aasm_event :new_message do
   end
 
