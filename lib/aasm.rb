@@ -1,4 +1,5 @@
 require File.join(File.dirname(__FILE__), 'event')
+require File.join(File.dirname(__FILE__), 'staged_event')
 require File.join(File.dirname(__FILE__), 'state')
 require File.join(File.dirname(__FILE__), 'state_machine')
 require File.join(File.dirname(__FILE__), 'persistence')
@@ -25,7 +26,7 @@ module AASM
       AASM::StateMachine[klass] = AASM::StateMachine[self].clone
       super
     end
-
+    
     def aasm_initial_state(set_state=nil)
       if set_state
         AASM::StateMachine[self].initial_state = set_state
@@ -174,5 +175,105 @@ module AASM
       
       false
     end
+  end
+end
+
+module StagedAASM
+  def self.Version
+    '2.0.3'
+  end
+
+  class InvalidTransition < RuntimeError
+  end
+  
+  def self.included(base) #:nodoc:
+    # TODO - need to ensure that a machine is being created because
+    # AASM was either included or arrived at via inheritance.  It
+    # cannot be both.
+    base.extend StagedAASM::ClassMethods
+  end
+
+  module ClassMethods
+
+    def aasm_is_staged
+      AASM::StateMachine[self].config.is_staged = true
+    end
+    
+    def aasm_admin_roles(*args)
+      sm = AASM::StateMachine[self]
+      args.each do |arg|
+        sm.admin_roles << arg if sm.roles.include?(arg)
+      end
+    end
+    
+    def aasm_staging_roles(*args)
+      sm = AASM::StateMachine[self]
+      args.each do |arg|
+        sm.staging_roles << arg if sm.roles.include?(arg)
+      end
+    end
+    
+    def admin_roles
+      AASM::StateMachine[self].admin_roles
+    end
+    
+    def staging_roles
+      AASM::StateMachine[self].staging_roles
+    end
+    
+    def aasm_staged_event(name, options = {}, &block)
+      sm = AASM::StateMachine[self]
+      
+      unless sm.events.has_key?(name)
+        sm.events[name] = AASM::SupportingClasses::StagedEvent.new(name, options.merge({:admin_roles => sm.admin_roles, :staging_roles => sm.staging_roles}), &block)
+      end
+      
+      define_method("#{name.to_s}!") do |*args|
+        aasm_fire_event(name, true, *args)
+      end
+      
+      define_method("#{name.to_s}") do |*args|
+        aasm_fire_event(name, false, *args)
+      end
+    end
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
   end
 end

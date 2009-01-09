@@ -2,13 +2,16 @@ require File.join(File.dirname(__FILE__), 'state_transition')
 
 module AASM
   module SupportingClasses
-    class Event
-      attr_reader :name, :success
+    class StagedEvent
+      attr_reader :name, :success, :admin_roles, :staging_roles, :admin_only
       
       def initialize(name, options = {}, &block)
         @name = name
         @success = options[:success]
+        @admin_roles = options[:admin_roles]
+        @staging_roles = options[:staging_roles]
         @transitions = []
+        @admin_only = options[:admin_only]
         instance_eval(&block) if block
       end
 
@@ -30,7 +33,7 @@ module AASM
         end
         next_state
       end
-      
+
       def transitions_from_state?(state)
         @transitions.any? { |t| t.from == state }
       end
@@ -49,7 +52,12 @@ module AASM
       private
       def transitions(trans_opts)
         Array(trans_opts[:from]).each do |s|
-          @transitions << SupportingClasses::StateTransition.new(trans_opts.merge({:from => s.to_sym}))
+          # Make admin version
+          @transitions << SupportingClasses::StateTransition.new(trans_opts.merge({:from => s.to_sym, :for => @admin_roles}))
+          # Make staging version if it should be there
+          unless @admin_only == true
+            @transitions << SupportingClasses::StateTransition.new(trans_opts.merge({:from => s.to_sym, :to => nil, :for => @staging_roles, :on_transition => trans_opts[:on_staged_transition]}))
+          end
         end
       end
       

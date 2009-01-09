@@ -200,6 +200,51 @@ begin
     end
   end
   
+  class FooBaz < ActiveRecord::Base
+    include AASM
+
+    # Fake this column for testing purposes
+    attr_accessor :aasm_state
+
+    aasm_initial_state :open
+    aasm_state :open
+    aasm_state :pending
+    aasm_state :closed
+
+    aasm_default_role :content_manager
+    aasm_role :content_manager
+    aasm_role :admin
+    
+    aasm_event :edit do
+      transitions :from => [:open, :closed], :to => [:open, :closed], :for => :admin
+      transitions :from => [:open, :closed], :to => :pending, :for => :content_manager
+    end
+    
+    aasm_event :open do
+      transitions :from => [:closed, :pending], :to => :open, :for => :admin
+      transitions :from => :closed, :to => :pending, :for => :content_manager
+    end
+    
+    aasm_event :close do
+      transitions :from => [:open, :pending], :to => :closed, :for => :admin
+      transitions :from => :open, :to => :pending, :for => :content_manager
+    end
+  end
+
+  describe 'FooBaz' do
+    before(:each) do
+      connection = mock(Connection, :columns => [])
+      FooBaz.stub!(:connection).and_return(connection)
+    end
+
+    it 'shold start off as open' do
+      fb = FooBaz.new
+      fb.aasm_current_state.should == :open
+    end
+  end    
+
+
+
 
   # TODO: figure out how to test ActiveRecord reload! without a database
 

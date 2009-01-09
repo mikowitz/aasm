@@ -464,3 +464,95 @@ describe AASM do
     lambda { bp.hide! }.should raise_error(AASM::InvalidTransition)
   end
 end
+
+class Feature
+  include AASM
+  include StagedAASM
+  
+  aasm_is_staged
+  
+  aasm_initial_state :staged
+  aasm_state :staged
+  aasm_state :active
+  aasm_state :hidden
+  aasm_state :removed
+  
+  aasm_default_role :content_manager
+  aasm_role :admin
+  aasm_role :content_manager
+  aasm_admin_roles :admin
+  aasm_staging_roles :content_manager
+  
+  aasm_staged_event :hide do
+    transitions :from => [:active, :staged], :to => :hidden, :on_transition => Proc.new {|obj, *args| puts "hide:admin"}, :on_staged_transition => Proc.new {|obj, *args| puts "hide:staging"}
+  end
+  
+  aasm_staged_event :approve, :admin_only => true do
+    transitions :from => [:staged], :on_transition => Proc.new {|obj, *args| puts "approve:admin"}
+  end
+end
+
+describe Feature, ' - basic staged class level definitions' do
+  it 'should respond to aasm_is_staged' do
+    Feature.should respond_to(:aasm_is_staged)
+  end
+  
+  it 'should respond to aasm_admin_roles' do
+    Feature.should respond_to(:aasm_admin_roles)
+  end
+  
+  it 'should respond to aasm_staging_roles' do
+    Feature.should respond_to(:aasm_staging_roles)
+  end
+end
+
+describe Feature do
+  before(:each) do
+    @f = Feature.new
+  end
+  
+
+  it 'should give the aasm_admin_roles' do
+    Feature.admin_roles.should == [:admin]
+  end
+  
+  it 'should give the aasm_staging_roles' do
+    Feature.staging_roles.should == [:content_manager]
+  end
+  
+  it 'should give the default starting state' do
+    @f.aasm_current_state.should == :staged
+  end
+  
+  it 'should go to staged when hidden by a normal user' do
+    @f.hide!
+    @f.aasm_current_state.should == :staged
+  end
+  
+  it 'should go to hidden when handled by an admin' do
+    @f.hide!(:admin)
+    @f.aasm_current_state.should == :hidden
+  end
+  
+  it 'should do something on approve' do
+    @f.hide!
+    @f.aasm_current_state.should == :staged
+    
+    @f.approve!(:admin)
+  end
+  
+  it 'should raise an error if a c_m tries to approve' do
+    lambda { @f.approve!}.should raise_error(AASM::InvalidTransition)
+  end
+  
+  
+  
+  
+  
+end
+
+
+
+
+
+

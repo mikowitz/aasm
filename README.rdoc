@@ -10,6 +10,7 @@ AASM has the following features:
 * Machines
 * Events
 * Transitions
+* Roles
 
 == Download
 
@@ -46,7 +47,6 @@ Here's a quick example highlighting some of the features.
     aasm_state :new
     aasm_state :read
     aasm_state :closed
-
 
     aasm_event :view do
       transitions :to => :read, :from => [:new]
