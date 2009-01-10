@@ -199,7 +199,6 @@ begin
       Beaver.aasm_column.should == :status
     end
   end
-<<<<<<< HEAD:spec/unit/active_record_persistence_spec.rb
   
   class FooBaz < ActiveRecord::Base
     include AASM
