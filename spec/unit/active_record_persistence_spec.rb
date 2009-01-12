@@ -237,7 +237,7 @@ begin
       FooBaz.stub!(:connection).and_return(connection)
     end
 
-    it 'shold start off as open' do
+    it 'should start off as open' do
       fb = FooBaz.new
       fb.aasm_current_state.should == :open
     end

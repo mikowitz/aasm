@@ -56,7 +56,7 @@ module AASM
           @transitions << SupportingClasses::StateTransition.new(trans_opts.merge({:from => s.to_sym, :for => @admin_roles}))
           # Make staging version if it should be there
           unless @admin_only == true
-            @transitions << SupportingClasses::StateTransition.new(trans_opts.merge({:from => s.to_sym, :to => nil, :for => @staging_roles, :on_transition => trans_opts[:on_staged_transition]}))
+            @transitions << SupportingClasses::StateTransition.new(trans_opts.merge({:from => s.to_sym, :to => (trans_opts[:staged_to] || nil), :for => @staging_roles, :on_transition => trans_opts[:on_staged_transition]}))
           end
         end
       end

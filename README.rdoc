@@ -57,6 +57,45 @@ Here's a quick example highlighting some of the features.
     end
   end
 
+
+== Less Simple Example
+
+Another example showing how to use the :role options
+
+  class Report
+    include AASM
+    
+    aasm_initial_state :submitted
+    
+    aasm_state :submitted
+    aasm_state :public
+    aasm_state :hidden
+
+    aasm_default_role :reporter
+
+    aasm_role :reporter
+    aasm_role :admin
+    
+    aasm_event :edit do
+      transitions :from => :public, :to => :submitted, :for => :reporter
+      transitions :from => :public, :to => :public, :for => :admin
+    end
+    
+    aasm_event :hide do
+      transitions :from => :public, :to => :submitted, :for => :reporter
+      transitions :from => :public, :to => :hidden, :for => :admin
+    end
+    
+    aasm_event :approve do
+      transitions :from => :submitted, :for => :admin, :on_transition => { approve_proposed_changes }
+    end
+    
+    aasm_event :reject do
+      transitions :from => :submitted, :for => :admin, :on_transition => { reject_proposed_changes }
+    end
+  end
+
+  
 = Other Stuff
 
 Author::  Scott Barron <scott at elitists dot net>

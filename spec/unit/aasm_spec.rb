@@ -484,7 +484,7 @@ class Feature
   aasm_staging_roles :content_manager
   
   aasm_staged_event :hide do
-    transitions :from => [:active, :staged], :to => :hidden, :on_transition => Proc.new {|obj, *args| puts "hide:admin"}, :on_staged_transition => Proc.new {|obj, *args| puts "hide:staging"}
+    transitions :from => [:active, :staged], :to => :hidden, :to_staged => :staged, :on_transition => Proc.new {|obj, *args| puts "hide:admin"}, :on_staged_transition => Proc.new {|obj, *args| puts "hide:staging"}
   end
   
   aasm_staged_event :approve, :admin_only => true do
@@ -544,15 +544,4 @@ describe Feature do
   it 'should raise an error if a c_m tries to approve' do
     lambda { @f.approve!}.should raise_error(AASM::InvalidTransition)
   end
-  
-  
-  
-  
-  
 end
-
-
-
-
-
-

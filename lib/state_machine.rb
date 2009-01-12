@@ -11,7 +11,7 @@ module AASM
       (@machines ||= {})[args] = val
     end
     
-    attr_accessor :states, :roles, :admin_roles, :staging_roles, :events, :initial_state, :default_role, :config
+    attr_accessor :states, :roles, :admin_roles, :staging_roles, :events, :initial_state, :default_role, :staging_state, :config
     attr_reader :name
     
     def initialize(name)
@@ -22,6 +22,7 @@ module AASM
       @roles = []
       @admin_roles = []
       @staging_roles = []
+      @staging_state = []
       @events = {}
       @config = OpenStruct.new
     end
